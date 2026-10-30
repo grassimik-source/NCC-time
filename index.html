@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NCC TIME">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>NCC TIME</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#141f30;--panel2:#1c2a3e;--text:#f4f7fb;--muted:#9eacc0;--green:#24c78a;--gold:#f5b942;--red:#ff6678;--line:#29384d}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#111e32,#080e18 60%);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 16px calc(24px + env(safe-area-inset-bottom));min-height:100vh}
+main{max-width:620px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;padding:20px 2px 16px}.brand{font-size:25px;font-weight:850;letter-spacing:1.2px}.brand span{color:var(--green)}.sub{font-size:12px;color:var(--muted);margin-top:3px}.pill{border:1px solid var(--line);border-radius:99px;padding:7px 10px;color:var(--muted);font-size:12px}
+.card{background:rgba(20,31,48,.96);border:1px solid var(--line);border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 12px 28px #0003}
+.date{font-size:14px;color:var(--muted)}.clock{font-size:42px;font-weight:800;letter-spacing:-1px;margin:5px 0 0}.status{font-size:13px;color:var(--muted);margin-top:5px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}button{font:inherit;border:0;border-radius:14px;padding:15px 12px;font-weight:750;cursor:pointer}.start{background:var(--green);color:#06251a}.stop{background:#26364c;color:var(--text);border:1px solid #3b4e67}.stop:disabled,.start:disabled{opacity:.35;cursor:not-allowed}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:var(--panel2);padding:14px;border-radius:15px}.metric small{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-size:25px;margin-top:5px}.green{color:var(--green)}.gold{color:var(--gold)}
+h2{font-size:17px;margin:0 0 14px}.muted{color:var(--muted)}.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.row+.row{margin-top:10px}
+label{display:block;color:var(--muted);font-size:12px;margin:10px 0 6px}input,select{width:100%;background:#0d1726;color:var(--text);border:1px solid var(--line);border-radius:11px;padding:12px;font:inherit}
+.smallbtn{padding:9px 11px;border-radius:10px;background:#26364c;color:var(--text);font-size:13px}.danger{color:var(--red)}.record{border-top:1px solid var(--line);padding:13px 0}.record:first-child{border-top:0}.record strong{font-size:14px}.record .details{font-size:12px;color:var(--muted);margin-top:5px}.empty{text-align:center;color:var(--muted);padding:20px 4px;font-size:14px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wide{grid-column:1/-1}.footer{color:#718198;text-align:center;font-size:11px;padding:14px 4px 0}
+</style>
+</head>
+<body><main>
+<header class="top"><div><div class="brand">NCC <span>TIME</span></div><div class="sub">Il tuo cartellino presenze</div></div><div class="pill">Versione gratuita</div></header>
+<section class="card">
+ <div class="date" id="today"></div><div class="clock" id="now">--:--:--</div><div class="status" id="status">Pronto per timbrare</div>
+ <div class="actions"><button class="start" id="clockIn">▶ TIMBRA ENTRATA</button><button class="stop" id="clockOut" disabled>■ TIMBRA USCITA</button></div>
+</section>
+<section class="card">
+ <h2>Riepilogo di oggi</h2>
+ <div class="grid">
+  <div class="metric"><small>Ore lavorate</small><strong id="worked">0h 00m</strong></div>
+  <div class="metric"><small>Ore ordinarie (max 11)</small><strong id="ordinary">0h 00m</strong></div>
+  <div class="metric"><small>Straordinario</small><strong class="gold" id="overtime">0h 00m</strong></div>
+  <div class="metric"><small>Compenso straordinario</small><strong class="green" id="pay">€0,00</strong></div>
+ </div>
+ <div class="row" style="margin-top:14px"><span class="muted" style="font-size:13px">Tariffa straordinario</span><strong id="rateLabel">€7,00 / ora</strong></div>
+</section>
+<section class="card">
+ <h2>Impostazioni e correzioni</h2>
+ <div class="formgrid">
+  <div><label for="rate">€ per ora straordinaria</label><input id="rate" type="number" min="0" step=".5" value="7"></div>
+  <div><label for="month">Mese da visualizzare</label><input id="month" type="month"></div>
+ </div>
+ <p class="muted" style="font-size:12px;line-height:1.5;margin-bottom:0">Il conteggio considera le prime 11 ore lavorate come ordinarie. Lo straordinario parte dopo le 11 ore completate (dalla dodicesima ora). Le pause si possono inserire nelle correzioni della singola giornata.</p>
+</section>
+<section class="card">
+ <div class="row"><h2 style="margin:0">Riepilogo del mese</h2><button class="smallbtn" id="export">Esporta CSV</button></div>
+ <div class="grid" style="margin-top:14px">
+  <div class="metric"><small>Giornate registrate</small><strong id="days">0</strong></div>
+  <div class="metric"><small>Totale ore</small><strong id="monthHours">0h 00m</strong></div>
+  <div class="metric"><small>Totale straordinari</small><strong class="gold" id="monthOvertime">0h 00m</strong></div>
+  <div class="metric"><small>Totale € straordinari</small><strong class="green" id="monthPay">€0,00</strong></div>
+ </div>
+</section>
+<section class="card"><h2>Storico timbrature</h2><div id="history" class="empty">Ancora nessuna giornata registrata.</div></section>
+<section class="card" id="editCard">
+ <h2>Inserisci o correggi una giornata</h2>
+ <div class="formgrid">
+  <div class="wide"><label for="editDate">Data</label><input id="editDate" type="date"></div>
+  <div><label for="editIn">Entrata</label><input id="editIn" type="time"></div>
+  <div><label for="editOut">Uscita</label><input id="editOut" type="time"></div>
+  <div><label for="editBreak">Pausa (minuti)</label><input id="editBreak" type="number" min="0" value="0"></div>
+  <div style="display:flex;align-items:end"><button class="start" style="width:100%;padding:12px" id="saveEdit">Salva giornata</button></div>
+ </div>
+ <div class="muted" style="font-size:11px;margin-top:10px">Usa questa sezione anche per aggiungere una giornata passata o correggere una timbratura.</div>
+</section>
+<div class="footer">I dati restano salvati su questo dispositivo. Esporta periodicamente il CSV come copia di sicurezza.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const KEY='ncctime_records_v1', RATE='ncctime_rate_v1';
+let records=JSON.parse(localStorage.getItem(KEY)||'[]');
+let rate=Number(localStorage.getItem(RATE)||7);
+$('rate').value=rate;
+const pad=n=>String(n).padStart(2,'0');
+const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(n);
+function minsBetween(a,b){if(!a||!b)return 0;let [ah,am]=a.split(':').map(Number),[bh,bm]=b.split(':').map(Number);let x=bh*60+bm-(ah*60+am);if(x<0)x+=1440;return x;}
+function calc(r){let m=Math.max(0,minsBetween(r.in,r.out)-Number(r.pause||0));let ordinary=Math.min(m,660), overtime=Math.max(0,m-660);return {m,ordinary,overtime,pay:overtime/60*rate};}
+function fmt(m){m=Math.round(m);return `${Math.floor(m/60)}h ${pad(m%60)}m`;}
+function save(){localStorage.setItem(KEY,JSON.stringify(records));localStorage.setItem(RATE,String(rate));render();}
+function todayRecord(){return records.find(r=>r.date===dateKey(new Date()));}
+function tick(){let d=new Date();$('today').textContent=d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});$('now').textContent=d.toLocaleTimeString('it-IT');let r=todayRecord();$('status').textContent=r?(r.out?`Turno registrato: ${r.in} – ${r.out}`:`Entrata registrata alle ${r.in}`):'Pronto per timbrare';$('clockIn').disabled=!!r;$('clockOut').disabled=!r||!!r.out;}
+$('clockIn').onclick=()=>{let d=new Date(),k=dateKey(d);if(todayRecord())return;records.push({date:k,in:`${pad(d.getHours())}:${pad(d.getMinutes())}`,out:'',pause:0});save();tick();};
+$('clockOut').onclick=()=>{let r=todayRecord();if(!r||r.out)return;let d=new Date();r.out=`${pad(d.getHours())}:${pad(d.getMinutes())}`;save();tick();};
+$('rate').onchange=()=>{rate=Math.max(0,Number($('rate').value)||0);save();};
+$('month').value=dateKey(new Date()).slice(0,7);$('editDate').value=dateKey(new Date());
+$('saveEdit').onclick=()=>{let date=$('editDate').value,inn=$('editIn').value,out=$('editOut').value,pause=Number($('editBreak').value)||0;if(!date||!inn||!out){alert('Inserisci data, entrata e uscita.');return;}let r=records.find(x=>x.date===date);if(r)Object.assign(r,{in:inn,out,pause});else records.push({date,in:inn,out,pause});save();};
+$('month').onchange=render;
+function render(){rate=Math.max(0,Number($('rate').value)||0);$('rateLabel').textContent=money(rate)+' / ora';let t=todayRecord();let c=t&&t.out?calc(t):t?calc({...t,out:`${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`}):{m:0,ordinary:0,overtime:0,pay:0};$('worked').textContent=fmt(c.m);$('ordinary').textContent=fmt(c.ordinary);$('overtime').textContent=fmt(c.overtime);$('pay').textContent=money(c.pay);
+let month=$('month').value,arr=records.filter(r=>r.date.startsWith(month)).sort((a,b)=>b.date.localeCompare(a.date));let totals=arr.reduce((s,r)=>{let x=calc(r);s.m+=x.m;s.o+=x.overtime;s.p+=x.pay;return s;},{m:0,o:0,p:0});$('days').textContent=arr.length;$('monthHours').textContent=fmt(totals.m);$('monthOvertime').textContent=fmt(totals.o);$('monthPay').textContent=money(totals.p);
+$('history').className=arr.length?'':'empty';$('history').innerHTML=arr.length?arr.map(r=>{let x=calc(r);return `<div class="record"><div class="row"><strong>${new Date(r.date+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}</strong><span class="green">${money(x.pay)}</span></div><div class="details">${r.in} → ${r.out||'In corso'} · ${fmt(x.m)} lavorate · straordinario ${fmt(x.overtime)}</div><div class="row" style="margin-top:9px"><button class="smallbtn" data-edit="${r.date}">Modifica</button><button class="smallbtn danger" data-delete="${r.date}">Elimina</button></div></div>`}).join(''):'Ancora nessuna giornata registrata per questo mese.';
+document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{let r=records.find(x=>x.date===b.dataset.edit);$('editDate').value=r.date;$('editIn').value=r.in;$('editOut').value=r.out;$('editBreak').value=r.pause||0;$('editCard').scrollIntoView({behavior:'smooth'});});
+document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{if(confirm('Eliminare questa giornata?')){records=records.filter(x=>x.date!==b.dataset.delete);save();tick();}});
+}
+$('export').onclick=()=>{let rows=[['Data','Entrata','Uscita','Pausa minuti','Ore lavorate','Ore ordinarie','Straordinario ore','Compenso straordinario']];records.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>{let x=calc(r);rows.push([r.date,r.in,r.out,r.pause||0,(x.m/60).toFixed(2),(x.ordinary/60).toFixed(2),(x.overtime/60).toFixed(2),x.pay.toFixed(2)]);});let csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='NCC-TIME-cartellino.csv';a.click();URL.revokeObjectURL(a.href);};
+tick();render();setInterval(tick,1000);
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script></body></html>
